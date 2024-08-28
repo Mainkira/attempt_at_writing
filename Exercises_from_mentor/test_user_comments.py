@@ -2,7 +2,7 @@ from user_comments import Users, Comments
 
 import pytest
 import random
-import string
+
 
 class TestMockApi(Users, Comments):
     # def __init__(self):
@@ -10,30 +10,29 @@ class TestMockApi(Users, Comments):
     #     self.comments = Comments()
 
     # 1 - получить всех юзеров женского пола
-    # @pytest.mark.parametrize('sex', ["female", "male"])
-    # def test_filter_by_sex(self, sex):
-    #     users = self.users.get_users_by_sex(sex)
-    #     assert all(user['sex'] == sex for user in users), "Имеются юзеры, не соответствующие фильтру sex"
+    @pytest.mark.parametrize('sex', ["female", "male"])
+    def test_filter_by_sex(self, sex):
+        users = self.get_users_by_sex(sex)
+        assert all(user['sex'] == sex for user in users), "Имеются юзеры, не соответствующие фильтру sex"
 
     # 2 - получить всех юзеров, имена которых содержат букву S
-    # @pytest.mark.parametrize("letters", ['S', 's'])
-    # def test_users_with_s_in_name(self, letters):
-    #     result = self.users.find_users_by_name(letters)
-    #     for user in result:
-    #         assert letters in user['name'].lower(), f'Юзер без {letters} в name'
+    @pytest.mark.parametrize("letters", ['S', 's'])
+    def test_users_with_s_in_name(self, letters):
+        result = self.find_users_by_name(letters)
+        for user in result:
+            assert letters in user['name'].lower(), f'Юзер без {letters} в name'
 
     # 3 - получить всех пользователей с четными ID
-    # @pytest.mark.parametrize('step', [step for step in range(1,5)])
-    # def test_selection_by_step_id(self):
-    #     result = self.users.get_users_by_step_id(2)
-    #     print(result)
-    #     for user in result:
-    #         assert int(user['id']) % 2 == 0, "ID юзера не соответствует шагу"
+    def test_selection_by_step_id(self):
+        result = self.get_users_by_step_id(2)
+        print(result)
+        for user in result:
+            assert int(user['id']) % 2 == 0, "ID юзера не соответствует шагу"
 
     # 8 - найти всех пользователей, у которых поле createdAt больше чем 2024-06-19T14:50:55.890Z
     @pytest.mark.parametrize("dates", ['2024-06-19T14:50:55.890Z', '2024-06-20T14:50:55.890Z', '2024-06-21T22:50:55.890Z'])
     def test_users_regs_from_date(self, dates):
-        result = self.users.filter_by_date(dates)
+        result = self.filter_by_date(dates)
         print(result)
         for user in result:
             assert user['createdAt'] > dates, "Юзеры не отфлитровались по дате"
@@ -59,10 +58,10 @@ class TestMockApi(Users, Comments):
         for comms in self.comments.get_all_comments():
             if comms['text'] == comments:
                 assert comms['userId'] in isaacs_ids, "Коммент не у Исаака"
-        # for i in self.comments.get_all_comments():
-        #     if i['text'] == comments:
-        #         self.delete('users/' + i['userId'] + '/comments/' + i['id'])
-        # assert comments not in self.comments.get_all_comments()
+        for i in self.comments.get_all_comments():
+            if i['text'] == comments:
+                self.delete('users/' + i['userId'] + '/comments/' + i['id'])
+        assert comments not in self.comments.get_all_comments()
 
     # 6 - получить каждый 3 коммент, отредактировать ему текст на TESTapiTEST
     @pytest.mark.parametrize('step', [random.randint(1,5)])
