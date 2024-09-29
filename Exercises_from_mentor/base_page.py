@@ -3,7 +3,6 @@ import requests
 class MockApi:
     url = 'https://66742d1675872d0e0a95683e.mockapi.io/api/v1/'
 
-
     def get(self, endpoint):
         response = requests.get(self.url + endpoint)
         return response.json()

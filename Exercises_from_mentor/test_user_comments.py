@@ -5,15 +5,12 @@ import random
 
 
 class TestMockApi(Users, Comments):
-    # def __init__(self):
-    #     self.users = Users()
-    #     self.comments = Comments()
 
     # 1 - получить всех юзеров женского пола
-    @pytest.mark.parametrize('sex', ["female", "male"])
-    def test_filter_by_sex(self, sex):
-        users = self.get_users_by_sex(sex)
-        assert all(user['sex'] == sex for user in users), "Имеются юзеры, не соответствующие фильтру sex"
+    @pytest.mark.parametrize('gender', ["female", "male"])
+    def test_filter_by_sex(self, gender):
+        users = self.get_users_by_sex(gender)
+        assert all(user['sex'] == gender for user in users), "Имеются юзеры, не соответствующие фильтру sex"
 
     # 2 - получить всех юзеров, имена которых содержат букву S
     @pytest.mark.parametrize("letters", ['S', 's'])
@@ -52,23 +49,25 @@ class TestMockApi(Users, Comments):
 # 5 - добавить коммент для пользователя у которого имя Isaac
     @pytest.mark.parametrize("comments", ['I am Isaac', 'I am a lord of the world', 'I want to sleep'])
     def test_post_comms_for_users_by_name(self, comments):
-        isaacs_ids = self.users.get_id('name', 'Isaac')
+        isaacs_ids = self.get_id('name', 'Isaac')
         for id in isaacs_ids:
-            self.comments.post_comm({'text': comments, "userId": id})
-        for comms in self.comments.get_all_comments():
+            self.post_comm({'text': comments, 'userId': id})
+        for comms in self.get_all_comments():
             if comms['text'] == comments:
                 assert comms['userId'] in isaacs_ids, "Коммент не у Исаака"
-        for i in self.comments.get_all_comments():
+        for i in self.get_all_comments():
             if i['text'] == comments:
-                self.delete('users/' + i['userId'] + '/comments/' + i['id'])
-        assert comments not in self.comments.get_all_comments()
+                user_id = i['userId']
+                comm_id = i['id']
+                self.delete(f'users/{user_id}/comments/{comm_id}')
+        assert comments not in self.get_all_comments()
 
     # 6 - получить каждый 3 коммент, отредактировать ему текст на TESTapiTEST
     @pytest.mark.parametrize('step', [random.randint(1,5)])
     @pytest.mark.parametrize('text', ['PKA1', 'PKA2', 'PKA3'])
     def test_change_every_step_comm(self, step, text):
-        self.comments.put_comm_step(step, text)
-        result = self.comments.get_all_comments()
+        self.put_comm_step(step, text)
+        result = self.get_all_comments()
         print(result)
         for comm in result:
             if result.index(comm) % step == 0:
@@ -81,15 +80,16 @@ class TestMockApi(Users, Comments):
     @pytest.mark.parametrize('step', [3, 4])
     def test_rip_random_comm(self, step):
         res = self.get_comm_step(3)
-        print(res)
+        print(res, len(res))
         quantity = random.randint(0, len(res)-1)
+        print(quantity)
         for _ in range(quantity):
             index_for_remove = random.choice(range(len(res)))
-            id = res[index_for_remove]['id']
-            userId = res[index_for_remove]['userId']
-            rip_comm = self.delete(f'users/{userId}/comments/{id}')
+            comm_id = res[index_for_remove]['id']
+            user_id = res[index_for_remove]['userId']
+            rip_comm = self.delete(f'users/{user_id}/comments/{comm_id}')
             print(rip_comm)
-            assert 'Not found' in self.get_comment_by_commentId(id), "Комментарий не удален"
+            assert 'Not found' in self.get_comment_by_commentId(comm_id), "Комментарий не удален"
 
 
 
